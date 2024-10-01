@@ -4,11 +4,11 @@
 usage() {
     echo "Usage: $0 -r <reference_fasta> -i <input_vcf> [-d <decomposed_output>] [-f <filled_output>] [-n <normalized_output>]"
     echo "Options:"
-    echo "  -r  Reference FASTA file (required)"
-    echo "  -i  Input VCF file (required)"
-    echo "  -d  Output file for decomposed VCF (optional)"
-    echo "  -f  Output file for filled VCF (optional)"
-    echo "  -n  Output file for normalized VCF (optional)"
+    echo "  -r Reference FASTA file (required)"
+    echo "  -i Input VCF file (required)"
+    echo "  -d Output file for decomposed VCF (optional)"
+    echo "  -f Output file for filled VCF (optional)"
+    echo "  -n Output file for normalized VCF (optional)"
     exit 1
 }
 
@@ -16,6 +16,9 @@ usage() {
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
+
+# Get the directory of the current script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Initialize variables
 REFERENCE_FASTA=""
@@ -43,7 +46,7 @@ if [ -z "$REFERENCE_FASTA" ] || [ -z "$INPUT_VCF" ]; then
 fi
 
 # Check if required commands exist
-for cmd in python bcftools; do
+for cmd in python3 bcftools; do
     if ! command_exists "$cmd"; then
         echo "Error: $cmd is not installed or not in PATH"
         exit 1
@@ -59,7 +62,7 @@ fi
 # Run decompose.py if output is specified
 if [ -n "$DECOMPOSED_OUTPUT" ]; then
     echo "Running decompose.py..."
-    if ! python decompose.py -i "$INPUT_VCF" -o "$DECOMPOSED_OUTPUT"; then
+    if ! python3 "$SCRIPT_DIR/scripts/decompose.py" -i "$INPUT_VCF" -o "$DECOMPOSED_OUTPUT"; then
         echo "Error: decompose.py failed"
         exit 1
     fi
@@ -72,7 +75,7 @@ fi
 # Run fill_indels.py if output is specified
 if [ -n "$FILLED_OUTPUT" ]; then
     echo "Running fill_indels.py..."
-    if ! python fill_indels.py -r "$REFERENCE_FASTA" -i "$CURRENT_INPUT" -o "$FILLED_OUTPUT"; then
+    if ! python3 "$SCRIPT_DIR/scripts/fill_indels.py" -r "$REFERENCE_FASTA" -i "$CURRENT_INPUT" -o "$FILLED_OUTPUT"; then
         echo "Error: fill_indels.py failed"
         exit 1
     fi
