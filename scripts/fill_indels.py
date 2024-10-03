@@ -6,23 +6,22 @@ def fill_indels_with_reference_check(vcf_df, reference_sequence):
     fill_snps = []
     for _, row in vcf_df.iterrows():
         pos, ref, alt = row['POS'], row['REF'], row['ALT']
-        pos = int(pos) - 1
-        if alt == "-":
-            # Extend REF to include the base before the deletion
-            ref = reference_sequence[pos-1:pos+len(ref)]
-            alt = reference_sequence[pos-1]
+        pos = int(pos) - 1  # Convert to 0-based position
+        
+        if alt == "-":  # Deletion
             pos -= 1
-        # Handle insertion (REF is "-")
-        elif ref == "-":
-            # Extend ALT to include the base before the insertion
-            alt = reference_sequence[pos-1] + alt
-            ref = reference_sequence[pos-1]
-            pos -= 1
-        else:
+            ref = reference_sequence[pos:pos+len(ref)+1]
+            alt = reference_sequence[pos]
+        elif ref == "-":  # Insertion
+            ref = reference_sequence[pos]
+            alt = reference_sequence[pos] + alt
+        else:  # SNP or already filled indel
             if ref != reference_sequence[pos:pos+len(ref)]:
                 print(f"Warning: Reference allele at position {pos+1} does not match the reference sequence")
-                continue # Skip this SNP
+                continue  # Skip this variant
+        
         fill_snps.append((pos + 1, ref, alt))
+    
     return fill_snps
 
 def write_filled_vcf(header_lines, filled_snps, vcf_df, output_file):
