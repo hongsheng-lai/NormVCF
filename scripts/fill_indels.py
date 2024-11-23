@@ -33,7 +33,11 @@ def write_filled_vcf(header_lines, filled_snps, vcf_df, output_file):
             f.write(line)
         # Write filled SNPs
         for (pos, ref, alt), (_, row) in zip(filled_snps, vcf_df.iterrows()):
-            f.write(f"{row['#CHROM']}\t{pos}\t{row['ID']}\t{ref}\t{alt}\t{row['QUAL']}\t{row['FILTER']}\t{row['INFO']}\t{row['FORMAT']}\t{row[sample]}\n")
+            # check if format or sample is present
+            if "FORMAT" in row:
+                f.write(f"{row['#CHROM']}\t{pos}\t{row['ID']}\t{ref}\t{alt}\t{row['QUAL']}\t{row['FILTER']}\t{row['INFO']}\t{row['FORMAT']}\t{row[sample]}\n")
+            else:
+                f.write(f"{row['#CHROM']}\t{pos}\t{row['ID']}\t{ref}\t{alt}\t{row['QUAL']}\t{row['FILTER']}\t{row['INFO']}\n")
 
 def main():
     parser = argparse.ArgumentParser(description="Fill indels in a VCF file using a reference FASTA.")
