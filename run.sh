@@ -26,6 +26,7 @@ INPUT_VCF=""
 DECOMPOSED_OUTPUT=""
 FILLED_OUTPUT=""
 NORMALIZED_OUTPUT=""
+REHEADERED_VCF=""
 
 # Parse command line options
 while getopts "r:i:d:f:n:" opt; do
@@ -59,17 +60,25 @@ if [ ! -f "$INPUT_VCF" ] || [ ! -f "$REFERENCE_FASTA" ]; then
     usage
 fi
 
+# Perform reheadering
+REHEADERED_VCF="${INPUT_VCF%.vcf}.reheader.vcf"
+echo "Running bcftools reheader..."
+if ! bcftools reheader -f "${REFERENCE_FASTA}.fai" -o "$REHEADERED_VCF" "$INPUT_VCF"; then
+    echo "Error: bcftools reheader failed"
+    exit 1
+fi
+echo "Reheadered VCF: $REHEADERED_VCF"
+CURRENT_INPUT="$REHEADERED_VCF"
+
 # Run decompose.py if output is specified
 if [ -n "$DECOMPOSED_OUTPUT" ]; then
     echo "Running decompose.py..."
-    if ! python3 "$SCRIPT_DIR/scripts/decompose.py" -i "$INPUT_VCF" -o "$DECOMPOSED_OUTPUT"; then
+    if ! python3 "$SCRIPT_DIR/scripts/decompose.py" -i "$CURRENT_INPUT" -o "$DECOMPOSED_OUTPUT"; then
         echo "Error: decompose.py failed"
         exit 1
     fi
     echo "Decomposed VCF: $DECOMPOSED_OUTPUT"
     CURRENT_INPUT="$DECOMPOSED_OUTPUT"
-else
-    CURRENT_INPUT="$INPUT_VCF"
 fi
 
 # Run fill_indels.py if output is specified

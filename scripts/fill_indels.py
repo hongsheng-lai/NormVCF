@@ -23,8 +23,9 @@ def fill_indels_with_reference_check(vcf_df, reference_sequence):
 
         # Handle different variant types
         if alt == "-":  # Deletion
-            ref = reference_sequence[pos:pos + len(ref) + 1]
-            alt = reference_sequence[pos]
+            ref = reference_sequence[pos-1:pos + len(ref)]
+            alt = reference_sequence[pos-1]
+            pos = pos - 1
         elif ref == "-":  # Insertion
             ref = reference_sequence[pos]
             alt = reference_sequence[pos] + alt
